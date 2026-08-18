@@ -1,4 +1,6 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
+
+const STORAGE_KEY = "clientbridge.clients";
 
 const NAV = ["Dashboard","Clients","Onboarding","Submissions","Workflows","Offboarding"];
 
@@ -81,12 +83,25 @@ const emptyOnboard = {
   shareholders:[],beneficialOwners:[],directors:[],submissions:[],
 };
 
-export default function App(){
-  const [nav,setNav]=useState("Dashboard");
-  const [clients,setClients]=useState([
+const SEED_CLIENTS = [
     {id:1,tradingName:"Novus Retail (Pty) Ltd",regName:"Novus Retail (Pty) Ltd",regNumber:"2019/123456/07",orgType:"Private Company (Pty) Ltd",incorporatedDate:"2019-03-01",stage:"Active",yearEnd:"28 Feb",industry:"Retail Trade",pic:"Medium (350-500)",bbee:"Level 2",bank:"FNB",accountNo:"62XXXXXXX",branchCode:"250655",incomeTaxNo:"9012345678",vatNo:"4012345678",payeNo:"7012345678",regAddress:"12 Main Road, Cape Town, 8001",tradingAddress:"Same as registered",shareholders:[{name:"John Mokoena",idNo:"8001015800080",nationality:"South African",pct:60,shareClass:"Ordinary",shares:600},{name:"Lisa van der Berg",idNo:"8503230056087",nationality:"South African",pct:40,shareClass:"Ordinary",shares:400}],beneficialOwners:[{name:"John Mokoena",idNo:"8001015800080",nationality:"South African",pct:60,controlType:"Direct ownership",pepStatus:"No",dateBecame:"2019-03-01"}],directors:[{name:"John Mokoena",idNo:"8001015800080",role:"Director",appointDate:"2019-03-01",resident:"Yes",email:"john@novus.co.za",phone:"0821234567",incomeTaxNo:"9098765432",pepStatus:"No"}],submissions:[{type:"cipc_ar",status:"Submitted",due:"2024-06-30",submitted:"2024-06-15",notes:""},{type:"cipc_bo",status:"Pending",due:"2024-09-30",submitted:"",notes:""},{type:"itr14",status:"In Progress",due:"2024-11-30",submitted:"",notes:"Draft prepared"}],vault:{}},
     {id:2,tradingName:"Apex Advisory CC",regName:"Apex Advisory CC",regNumber:"2015/234567/23",orgType:"Private Company (Pty) Ltd",incorporatedDate:"2015-06-15",stage:"Onboarding",yearEnd:"31 Mar",industry:"Financial Services",pic:"Low (<350)",bbee:"Level 4",bank:"Standard Bank",accountNo:"00XXXXXXX",branchCode:"051001",incomeTaxNo:"",vatNo:"",payeNo:"",regAddress:"45 Bree Street, Cape Town, 8000",tradingAddress:"45 Bree Street, Cape Town, 8000",shareholders:[],beneficialOwners:[],directors:[],submissions:[{type:"cipc_ar",status:"Overdue",due:"2024-03-31",submitted:"",notes:""}],vault:{}},
-  ]);
+];
+
+function loadClients(){
+  try{
+    const raw=localStorage.getItem(STORAGE_KEY);
+    if(raw) return JSON.parse(raw);
+  }catch{}
+  return SEED_CLIENTS;
+}
+
+export default function App(){
+  const [nav,setNav]=useState("Dashboard");
+  const [clients,setClients]=useState(loadClients);
+  useEffect(()=>{
+    try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(clients)); }catch{}
+  },[clients]);
   const [selected,setSelected]=useState(null);
   const [onboard,setOnboard]=useState({...emptyOnboard});
   const [step,setStep]=useState(0);
